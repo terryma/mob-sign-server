@@ -189,7 +189,8 @@ app.get('/mobile-auth', function(req, res) {
         if (callback !== undefined) {
 
             var qs = querystring.stringify({
-                "uid": uid
+                "uid": uid,
+                "authed":authed
             });
 
             var siteUrl = url.parse(callback);
