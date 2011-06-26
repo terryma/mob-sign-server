@@ -48,7 +48,7 @@ registries.push({"uid":"terry@google.com", "site":"google.com", "deviceId":"1234
 // sessionId = browser session id
 // callback = callback url, when an auth response is received from the mobile device, this callback will be invoked
 // site = website to be authed
-app.get('/register-user', function(req, res) {
+app.get('/auth', function(req, res) {
     console.log(req.query);
 
     var result = "";
