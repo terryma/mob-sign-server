@@ -4,6 +4,8 @@
  */
 
 var express = require('express');
+var http = require('http');
+var url = require('url');
 
 var app = module.exports = express.createServer();
 
@@ -41,6 +43,11 @@ var registries = [];
 registries.push({"uid":"terry@amazon.com", "site":"amazon.com", "deviceId":"12345"});
 registries.push({"uid":"terry@google.com", "site":"google.com", "deviceId":"12345"});
 
+
+// uid = user name
+// sessionId = browser session id
+// callback = callback url, when an auth response is received from the mobile device, this callback will be invoked
+// site = website to be authed
 app.get('/register-user', function(req, res) {
     console.log(req.query);
 
@@ -81,6 +88,9 @@ app.get('/register-user', function(req, res) {
     res.send({res:result});
 });
 
+// deviceId = the device to pull auth requests from
+// return: msg indicating success or failure
+// return: an array of {uid,site} indicating the user and site the auth request is for
 app.get('/pull-device', function(req, res) {
     console.log(req.query);
 
@@ -122,7 +132,15 @@ app.get('/pull-device', function(req, res) {
             console.log("all requests = " + JSON.stringify(requests));
             console.log("filtered requests = " + JSON.stringify(filteredRequests));
             console.log("authed requests = " + JSON.stringify(authedRequests));
-            // remove all of filtered requests from the global requests because a pull has been made
+
+            // sort the requests by time
+            filteredRequests.sort(function(l, r) {
+                return l.time - r.time;
+            });
+            // keep the latest request
+            filteredRequests.pop();
+
+            // remove all of filtered requests from the global requests except the latest one because a pull has been made
             requests = requests.filter(function(val) {
                 return filteredRequests.indexOf(val) == -1;
             });
@@ -130,7 +148,59 @@ app.get('/pull-device', function(req, res) {
             console.log("all requests after removing filtered requests = " + JSON.stringify(requests));
         }
     }
-    res.send({"msg":resultMsg, "auth-requests":authedRequests});
+    res.send({"msg":resultMsg, "auth_requests":authedRequests});
+});
+
+app.get('/mobile-auth', function(req, res) {
+    var msg;
+    var callback;
+    if (req.query.deviceId === undefined) {
+        msg = "device id is required";
+    } else if (req.query.uid === undefined) {
+        msg = "uid is required";
+    } else if (req.query.site === undefined) {
+        msg = "site is required";
+    } else if (req.query.authed === undefined) {
+        msg = "authed is required";
+    } else {
+        var deviceId = req.query.deviceId;
+        var uid = req.query.uid;
+        var site = req.query.site;
+        var authed = req.query.authed;
+        // filter the registries down to the ones that match the correct device
+        var filteredRegistries = registries.filter(function(val) {
+            return val.deviceId == deviceId && val.uid == uid && val.site == site;
+        });
+
+        // this obviously won't work for all cases and is just for demo purpose
+        for (var i = 0; i < requests.length; i++) {
+            var r = requests[i];
+            if (r.uid == uid && r.site == site) {
+                callback = r.callback;
+                break;
+            }
+        }
+    }
+
+    if (callback !== undefined) {
+        var siteUrl = url.parse(callback);
+        var site = http.createClient(siteUrl.port || 80, siteUrl.host);
+        console.log("url = " + JSON.stringify(siteUrl));
+
+        var request = site.request("GET", siteUrl.pathname, {'host' : siteUrl.host});
+        request.end();
+
+        request.on('response', function(response) {
+            response.setEncoding('utf8');
+            console.log('STATUS: ' + response.statusCode);
+            response.on('data', function(chunk) {
+                console.log("DATA: " + chunk);
+            });
+            res.send({callback:callback});
+        });
+    } else {
+        res.send("Cannot find callback");
+    }
 });
 
 app.listen(3000);
