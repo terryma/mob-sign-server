@@ -74,7 +74,7 @@ app.get('/register-user', function(req, res) {
             var r = registries[i];
             if (r.uid == uid && r.site == site) {
                 // if the user is already registered, persist the request
-                requests.push({"uid":uid, "site":site, "sessionId":sessionId, "callback":callback, "time":new Date().getTime()});
+                requests.push({"uid":uid, "site":site, "sessionId":sessionId, "callback":callback, "time":new Date().getTime(), "fired":false});
                 found = true;
                 break;
             }
@@ -112,7 +112,11 @@ app.get('/pull-device', function(req, res) {
 
             var registry = filteredRegistries[i];
             var filteredRequests = requests.filter(function(val) {
-                return val.uid == registry.uid && val.site == registry.site;
+                var filtered = val.uid == registry.uid && val.site == registry.site && !val.fired;
+                if (filtered) {
+                    val.fired = true;
+                }
+                return filtered;
             });
 
             var authedSet = {};
