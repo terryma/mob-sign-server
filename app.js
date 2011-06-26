@@ -185,32 +185,36 @@ app.get('/mobile-auth', function(req, res) {
                 break;
             }
         }
-    }
 
-    if (callback !== undefined) {
+        if (callback !== undefined) {
 
-        var qs = querystring.stringify({
-            "uid": uid
-        });
-
-        var siteUrl = url.parse(callback);
-        var options = {
-            host: siteUrl.host,
-            port: siteUrl.port || 80,
-            path: siteUrl.pathname + '?'+qs
-        };
-
-        http.get(options, function(response) {
-            response.on('data', function(d) {
+            var qs = querystring.stringify({
+                "uid": uid
             });
-        }).on('error', function(e) {
-            console.log("Got error: " + e.message);
-        });
 
-        res.send({callback:callback});
-    } else {
-        res.send("Cannot find callback");
+            var siteUrl = url.parse(callback);
+            var options = {
+                host: siteUrl.host,
+                port: siteUrl.port || 80,
+                path: siteUrl.pathname + '?'+qs
+            };
+
+            http.get(options, function(response) {
+                response.on('data', function(d) {
+                });
+            }).on('error', function(e) {
+                console.log("Got error: " + e.message);
+            });
+
+            res.send({callback:callback});
+        } else {
+            res.send("Cannot find callback");
+        }
     }
+    if (msg !== undefined) {
+        res.send(msg);
+    }
+
 });
 
 app.listen(80);
