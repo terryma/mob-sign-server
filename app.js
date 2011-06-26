@@ -6,6 +6,7 @@
 var express = require('express');
 var http = require('http');
 var url = require('url');
+var querystring = require('querystring');
 
 var app = module.exports = express.createServer();
 
@@ -187,21 +188,26 @@ app.get('/mobile-auth', function(req, res) {
     }
 
     if (callback !== undefined) {
-        var siteUrl = url.parse(callback);
-        var site = http.createClient(siteUrl.port || 80, siteUrl.host);
-        console.log("url = " + JSON.stringify(siteUrl));
 
-        var request = site.request("GET", siteUrl.pathname, {'host' : siteUrl.host});
-        request.end();
-
-        request.on('response', function(response) {
-            response.setEncoding('utf8');
-            console.log('STATUS: ' + response.statusCode);
-            response.on('data', function(chunk) {
-                console.log("DATA: " + chunk);
-            });
-            res.send({callback:callback});
+        var qs = querystring.stringify({
+            "uid": uid
         });
+
+        var siteUrl = url.parse(callback);
+        var options = {
+            host: siteUrl.host,
+            port: siteUrl.port || 80,
+            path: siteUrl.pathname + '?'+qs
+        };
+
+        http.get(options, function(response) {
+            response.on('data', function(d) {
+            });
+        }).on('error', function(e) {
+            console.log("Got error: " + e.message);
+        });
+
+        res.send({callback:callback});
     } else {
         res.send("Cannot find callback");
     }
