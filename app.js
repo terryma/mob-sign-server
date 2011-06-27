@@ -67,6 +67,7 @@ app.get('/auth', function(req, res) {
         var sessionId = req.query.sessionId;
         var callback = req.query.callback;
         var site = req.query.site;
+        console.log("Received auth request with uid = " + uid + ", site = " + site + ", callback = " + callback);
 
         // check that the uid and sites exist
         var len = registries.length;
@@ -85,6 +86,7 @@ app.get('/auth', function(req, res) {
         } else {
             result = "Found user in registry, persisted request";
         }
+        console.log("Pending request size = " + requests.length);
     }
     res.send({res:result});
 });
