@@ -123,7 +123,7 @@ app.get('/pull-device', function(req, res) {
                 return filtered;
             });
 
-            console.log(filteredRequests.length + " requests in queue match the uid and site of device " + deviceId + " and have not been fired. uid = " + uid + ", site = " + site);
+            console.log(filteredRequests.length + " requests in queue match the uid and site of device " + deviceId + " and have not been fired. uid = " + registry.uid + ", site = " + registry.site);
 
 
             var authedSet = {};
