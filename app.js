@@ -42,7 +42,7 @@ app.get('/', function(req, res){
 var requests = [];
 var registries = [];
 registries.push({"uid":"team-milkshake@amazon.com", "site":"amazon.com", "deviceId":"6b4273b50428284c"}); // This device id is my samsung phone
-registries.push({"uid":"team-milkshake@linkedin.com", "site":"linkedin.com", "deviceId":"device2"});
+registries.push({"uid":"team-milkshake@google.com", "site":"google.com", "deviceId":"6b4273b50428284c"});
 registries.push({"uid":"team-milkshake@facebook.com", "site":"facebook.com",
 "deviceId":"device3"});
 
