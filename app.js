@@ -41,7 +41,7 @@ app.get('/', function(req, res){
 // in memory structures, for demo purpose only
 var requests = [];
 var registries = [];
-registries.push({"uid":"team-milkshake@amazon.com", "site":"amazon.com", "deviceId":"device1"});
+registries.push({"uid":"team-milkshake@amazon.com", "site":"amazon.com", "deviceId":"6b4273b50428284c"}); // This device id is my samsung phone
 registries.push({"uid":"team-milkshake@linkedin.com", "site":"linkedin.com", "deviceId":"device2"});
 registries.push({"uid":"team-milkshake@facebook.com", "site":"facebook.com",
 "deviceId":"device3"});
