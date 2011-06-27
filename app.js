@@ -41,16 +41,17 @@ app.get('/', function(req, res){
 // in memory structures, for demo purpose only
 var requests = [];
 var registries = [];
-registries.push({"uid":"terry@amazon.com", "site":"amazon.com", "deviceId":"12345"});
-registries.push({"uid":"terry@google.com", "site":"google.com", "deviceId":"12345"});
-
+registries.push({"uid":"team-milkshake@amazon.com", "site":"amazon.com", "deviceId":"device1"});
+registries.push({"uid":"team-milkshake@linkedin.com", "site":"linkedin.com", "deviceId":"device2"});
+registries.push({"uid":"team-milkshake@facebook.com", "site":"facebook.com",
+"deviceId":"device3"});
 
 // uid = user name
 // sessionId = browser session id
 // callback = callback url, when an auth response is received from the mobile device, this callback will be invoked
 // site = website to be authed
 app.get('/auth', function(req, res) {
-    console.log(req.query);
+    // console.log(req.query);
 
     var result = "";
     if (req.query.uid === undefined) {
@@ -66,7 +67,6 @@ app.get('/auth', function(req, res) {
         var sessionId = req.query.sessionId;
         var callback = req.query.callback;
         var site = req.query.site;
-
 
         // check that the uid and sites exist
         var len = registries.length;
@@ -93,7 +93,7 @@ app.get('/auth', function(req, res) {
 // return: msg indicating success or failure
 // return: an array of {uid,site} indicating the user and site the auth request is for
 app.get('/pull-device', function(req, res) {
-    console.log(req.query);
+//    console.log(req.query);
 
     var resultMsg = "";
     var authedRequests = []; // list of authed sites
@@ -102,6 +102,7 @@ app.get('/pull-device', function(req, res) {
     } else {
         resultMsg = "success";
         var deviceId = req.query.deviceId;
+        console.log("Device id " + deviceId + " is pulling...");
 
         // filter the registries down to the ones that match the correct device
         var filteredRegistries = registries.filter(function(val) {
@@ -120,11 +121,14 @@ app.get('/pull-device', function(req, res) {
                 return filtered;
             });
 
+            console.log(filteredRequests.length + " requests in queue match the uid and site of device " + deviceId + " and have not been fired. uid = " + uid + ", site = " + site);
+
+
             var authedSet = {};
             for (var ii = 0; ii < filteredRequests.length; ii++) {
                 var val = filteredRequests[ii];
                 if (val.uid == registry.uid && val.site == registry.site && new Date().getTime() - val.time < 60000) {
-                    console.log("Found matching request");
+                    //console.log("Found matching request");
                     //authedRequests.push({"uid":val.uid, "site":val.site});
                     var t = {"uid": val.uid, "site":val.site};
                     authedSet[t] = t; 
@@ -133,9 +137,9 @@ app.get('/pull-device', function(req, res) {
             for (o in authedSet) {
                 authedRequests.push(authedSet[o]);
             }
-
-            console.log("all requests = " + JSON.stringify(requests));
-            console.log("filtered requests = " + JSON.stringify(filteredRequests));
+            console.log("Total number of requests in queue = " + requests.length);
+            // console.log("all requests = " + JSON.stringify(requests));
+            //console.log("filtered requests = " + JSON.stringify(filteredRequests));
             console.log("authed requests = " + JSON.stringify(authedRequests));
 
             // sort the requests by time
@@ -150,7 +154,8 @@ app.get('/pull-device', function(req, res) {
                 return filteredRequests.indexOf(val) == -1;
             });
 
-            console.log("all requests after removing filtered requests = " + JSON.stringify(requests));
+            console.log("Total number of requests after removing filtered requests = " + requests.length);
+            // console.log("all requests after removing filtered requests = " + JSON.stringify(requests));
         }
     }
     res.send({"msg":resultMsg, "auth_requests":authedRequests});
